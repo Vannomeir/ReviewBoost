@@ -296,7 +296,7 @@ function setupSendRequestForm() {
 }
 function setupBusinessQRCode(businessId) {
     // Construct the direct link using the current domain
-    const publicFeedbackUrl = `${window.location.origin}/feedback.html?business_id=${businessId}`;
+    const publicFeedbackUrl = `https://vannomeir.github.io/ReviewBoost/feedback.html?business_id=${businessId}`;
     
     const linkInput = document.getElementById('public-link-input');
     if (linkInput) {
