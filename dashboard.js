@@ -101,7 +101,7 @@ async function loadDashboardStats(businessId) {
 // Add this function inside dashboard.js and call it after loading the business
 function setupBusinessQRCode(businessId) {
     // Construct the public feedback URL for this specific business
-    const publicFeedbackUrl = `${window.location.origin}/feedback.html?business_id=${businessId}`;
+    const publicFeedbackUrl = new URL(`feedback.html?business_id=${businessId}`, window.location.href).href;
     
     // Set the input field text
     const linkInput = document.getElementById('public-link-input');
