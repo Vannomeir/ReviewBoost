@@ -1,40 +1,32 @@
-document.getElementById('loginForm').addEventListener('submit', async function(event) {
-    event.preventDefault(); // Stop page refresh
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    // 1. THIS IS THE MAGIC LINE: It stops the page from refreshing and erasing your details
+    e.preventDefault(); 
 
-    const emailInput = document.getElementById('email').value.trim();
-    const passwordInput = document.getElementById('password').value;
-    const submitButton = document.querySelector('.primary-btn');
-    const forgotContainer = document.getElementById('forgot-password-container');
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const submitButton = this.querySelector('button[type="submit"]');
 
-    // Show loading state
-    submitButton.textContent = "Signing in...";
+    submitButton.textContent = "Logging in...";
     submitButton.disabled = true;
 
     try {
-        // Authenticate using Supabase Auth
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: emailInput,
-            password: passwordInput,
+        // 2. Sign in using the ReviewBoost client
+        const { data, error } = await window.reviewBoostClient.auth.signInWithPassword({
+            email: email,
+            password: password,
         });
 
         if (error) throw error;
 
-        // Login successful - redirect to dashboard
+        // 3. Success! Redirect exactly to the dashboard file
         window.location.href = 'dashboard.html';
 
     } catch (error) {
         console.error("Login error:", error.message);
-        alert("Incorrect email or password. Please try again.");
+        alert("Login failed: " + error.message);
         
-        // Reveal the forgot password link after a failed attempt
-        forgotContainer.innerHTML = `
-            <a href="forgot-password.html" style="font-size: 13px; color: #2563eb; text-decoration: none;">
-                Forgot your password?
-            </a>
-        `;
-    } finally {
-        // Always re-enable the button and restore text, regardless of success/fail
-        submitButton.textContent = "Sign In";
+        // Reset the button so the user can try again
+        submitButton.textContent = "Log In";
         submitButton.disabled = false;
     }
 });
