@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. Auth Protection - Use window.reviewBoostClient (matching api.js)
     const { data: { session }, error: sessionError } = await window.reviewBoostClient.auth.getSession();
     if (sessionError || !session) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
         return;
     }
 
