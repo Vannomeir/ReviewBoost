@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Feedback - ReviewBoost</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .feedback-body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f3f4f6;
+        }
+        .feedback-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 35px;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #f59e0b;
+        }
+        .feedback-card textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body class="feedback-body">
+
+    <div class="feedback-card" id="card-container">
+        <h2 style="color: #2563eb; margin-bottom: 10px;">We value your feedback!</h2>
+        <p style="color: #6b7280; margin-bottom: 20px; font-size: 14px;">Please rate your recent experience with us.</p>
+        
+        <div id="loading-msg">Loading request...</div>
+
+        <form id="feedbackForm" style="display: none;">
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5" required /><label for="star5" title="5 stars">★</label>
+                <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars">★</label>
+                <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars">★</label>
+                <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars">★</label>
+                <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star">★</label>
+            </div>
+
+            <textarea id="comment" placeholder="Tell us about your experience (optional)..."></textarea>
+            <button type="submit" class="primary-btn" id="submit-btn">Submit Feedback</button>
+        </form>
+    </div>
+
+    <!-- Supabase and logic scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api.js"></script>
+    <script>
+        
+let currentRequestId = null;
+let currentBusinessId = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const businessId = urlParams.get('business_id');
+
+    // Use the Supabase client initialized in api.js
+    const client = window.reviewBoostClient;
+
+    if (!client) {
+        document.getElementById('loading-msg').textContent =
+            "Unable to connect to the database.";
+        return;
+    }
+
+    if (token) {
+        // CUSTOMER FEEDBACK REQUEST VIA TOKEN
+        try {
+            const { data: request, error } = await client
+                .from('feedback_requests')
+                .select('request_id, status, expires_at, customers(business_id)')
+                .eq('token', token)
+                .single();
+
+            if (error || !request) {
+                throw new Error("This feedback link is invalid.");
+            }
+
+            if (request.status === 'Completed' ||
+                request.status === 'Expired') {
+                throw new Error(
+                    "This feedback link has already been used or has expired."
+                );
+            }
+
+            if (new Date() > new Date(request.expires_at)) {
+                throw new Error("This feedback link has expired.");
+            }
+
+            currentRequestId = request.request_id;
+            currentBusinessId = request.customers.business_id;
+
+            // Mark request as opened
+            await client
+                .from('feedback_requests')
+                .update({ status: 'Opened' })
+                .eq('request_id', currentRequestId);
+
+            document.getElementById('loading-msg').style.display = 'none';
+            document.getElementById('feedbackForm').style.display = 'block';
+
+        } catch (err) {
+            document.getElementById('loading-msg').textContent = err.message;
+        }
+
+    } else if (businessId) {
+        // GENERAL PUBLIC QR CODE SCAN
+        currentBusinessId = businessId;
+
+        document.getElementById('loading-msg').style.display = 'none';
+        document.getElementById('feedbackForm').style.display = 'block';
+
+    } else {
+        document.getElementById('loading-msg').textContent =
+            "Invalid link. No business specified.";
+    }
+});
+
+
+// HANDLE FEEDBACK SUBMISSION
+document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const rating = document.querySelector('input[name="rating"]:checked');
+    const comment = document.getElementById('comment').value.trim();
+    const submitBtn = document.getElementById('submit-btn');
+    const client = window.reviewBoostClient;
+
+    if (!rating || !currentBusinessId) {
+        alert("Please select a rating or check your feedback link.");
+        return;
+    }
+
+    submitBtn.textContent = "Submitting...";
+    submitBtn.disabled = true;
+
+    try {
+        // Save feedback as a direct review
+        const { error: reviewError } = await client
+            .from('reviews')
+            .insert([{
+                business_id: currentBusinessId,
+                platform: 'Direct',
+                rating: parseInt(rating.value),
+                text: comment
+            }]);
+
+        if (reviewError) throw reviewError;
+
+        // Only update feedback requests created through a token
+        if (currentRequestId) {
+            const { error: requestError } = await client
+                .from('feedback_requests')
+                .update({ status: 'Completed' })
+                .eq('request_id', currentRequestId);
+
+            if (requestError) throw requestError;
+        }
+
+        // Display success message
+        document.getElementById('card-container').innerHTML = `
+            <h2 style="color: #059669; margin-bottom: 10px;">
+                Thank You!
+            </h2>
+            <p style="color: #6b7280;">
+                Your feedback has been received and shared with the business owner.
+            </p>
+        `;
+
+    } catch (err) {
+        console.error("Submission error:", err);
+        alert("Failed to submit feedback. Please try again.");
+
+        submitBtn.textContent = "Submit Feedback";
+        submitBtn.disabled = false;
+    }
+});
+
+    </script>
+</body>
+</html>

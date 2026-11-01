@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewboost - Dashboard</title>
+    <!-- Reusing the same style sheet for consistency -->
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <h2>Reviewboost</h2>
+        <nav>
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="reviews.html">All Reviews</a>
+            <a href="analytics.html">Analytics</a>
+            <a href="settings.html">Settings</a> <!-- Updated link here -->
+            <a href="login.html">Log out</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <button id="mobileMenuBtn" class="mobile-btn">☰ Menu</button>
+            <h1 id="business-name-display">Loading Business...</h1>
+            <h2>Dashboard Overview</h2>
+            <div class="user-profile">Admin</div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Reviews</h3>
+                <p class="stat-number">1,284</p>
+            </div>
+            <div class="stat-card">
+                <h3>Average Rating</h3>
+                <p class="stat-number">4.8 <span>/ 5</span></p>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Replies</h3>
+                <p class="stat-number">12</p>
+            </div>
+        </section>
+
+        <div class="card" style="margin-top: 20px;">
+    <h3>Your Public Feedback QR Code</h3>
+    <p style="color: #6b7280; font-size: 14px;">Print this code or share the link below so customers can leave reviews instantly without an SMS invitation.</p>
+    
+    <div style="margin: 15px 0;">
+        <input type="text" id="public-link-input" readonly style="width: 70%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+        <button id="copy-link-btn" class="primary-btn" style="padding: 8px 15px;">Copy Link</button>
+    </div>
+
+    <!-- The QR Code will be injected here -->
+    <div id="qrcode" style="display: flex; margin-top: 15px;"></div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+        <section class="recent-reviews">
+            <h2>Recent Reviews</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Jane Doe</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                        <td>"Amazing service, highly recommended!"</td>
+                        <td>Oct 18, 2026</td>
+                    </tr>
+                    <tr>
+                        <td>John Smith</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>"Good experience, but delivery was a day late."</td>
+                        <td>Oct 17, 2026</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+    </main>
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

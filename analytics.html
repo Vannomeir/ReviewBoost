@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewboost - Analytics</title>
+    <!-- Reusing the same style sheet for consistency -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* A few inline styles for the chart container, move these to style.css later */
+        .chart-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+        .trend-container {
+            width: 100%;
+            height: 250px;
+            margin-top: 15px;
+        }
+        .platform-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <h2>Reviewboost</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="reviews.html">All Reviews</a>
+            <a href="analytics.html" class="active">Analytics</a> <!-- Active class moved here -->
+            <a href="settings.html">Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <button id="mobileMenuBtn" class="mobile-btn">☰ Menu</button>
+            <h1>Analytics & Performance</h1>
+            <div class="user-profile">Admin</div>
+        </header>
+
+        <!-- Top Level Stats (Based on your System Design specs) -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Reviews</h3>
+                <p class="stat-number" id="stat-total">1,284</p>
+            </div>
+            <div class="stat-card">
+                <h3>Average Rating</h3>
+                <p class="stat-number"><span id="stat-avg">4.8</span> <span>/ 5</span></p>
+            </div>
+            <div class="stat-card">
+                <h3>Response Rate</h3>
+                <p class="stat-number" id="stat-rate">85%</p>
+            </div>
+        </section>
+
+        <!-- Trend Chart Section -->
+        <section class="chart-card">
+            <h2>Average Rating by Month</h2>
+            <p style="color: #666; font-size: 0.9em;">Track how your customer satisfaction is trending over time.</p>
+            <!-- Your JS will draw the SVG chart inside this div -->
+            <div id="trend" class="trend-container" role="img" aria-label="Line chart of average rating by month"></div>
+        </section>
+
+        <!-- Platform Breakdown Section -->
+        <section class="platform-breakdown">
+            <div class="stat-card">
+                <h3>Google</h3>
+                <p class="stat-number">842 <span>reviews</span></p>
+            </div>
+            <div class="stat-card">
+                <h3>Facebook</h3>
+                <p class="stat-number">315 <span>reviews</span></p>
+            </div>
+            <div class="stat-card">
+                <h3>Direct (SMS/WA)</h3>
+                <p class="stat-number">127 <span>reviews</span></p>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Make sure to link the JavaScript file that contains the drawTrend() function -->
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api.js"></script>
+    <script src="analytics.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewboost - Sign Up</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <h2>Create an Account</h2>
+            <p>Get started with Reviewboost</p>
+            
+            <form id="signupForm">
+                <div class="input-group">
+                    <label for="businessName">Business Name</label>
+                    <input type="text" id="businessName" required placeholder="My Awesome Business">
+                </div>
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="you@company.com">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="primary-btn">Sign Up</button>
+            </form>
+            <p style="margin-top: 20px; font-size: 14px;">
+                Already have an account? <a href="login.html" style="color: #2563eb; text-decoration: none;">Log in</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Supabase CDN and Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api.js"></script>
+    <script src="signup.js"></script>
+</body>
+</html>

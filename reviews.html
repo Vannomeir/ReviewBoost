@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewboost - All Reviews</title>
+    <!-- Reusing the same style sheet for consistency -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Inline styles for the filters and reviews, move to style.css later */
+        .filter-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .filter-group input, .filter-group select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .search-group {
+            flex-grow: 1;
+        }
+        .search-group input {
+            width: 100%;
+        }
+        .reviews-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        /* Basic styles for when JS injects the review items */
+        .review-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <h2>Reviewboost</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="reviews.html" class="active">All Reviews</a> <!-- Active class moved here -->
+            <a href="analytics.html">Analytics</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <button id="mobileMenuBtn" class="mobile-btn">☰ Menu</button>
+            <h1>All Reviews</h1>
+            <div class="user-profile">Admin</div>
+        </header>
+
+        <!-- Filters Section -->
+        <form id="filters" class="filter-card">
+            <div class="filter-group">
+                <label for="f-platform">Platform</label>
+                <select id="f-platform">
+                    <option value="">All</option>
+                    <option>Google</option>
+                    <option>Facebook</option>
+                    <option>Direct</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="f-rating">Rating</label>
+                <select id="f-rating">
+                    <option value="">All</option>
+                    <option value="5">5 stars</option>
+                    <option value="4">4 stars</option>
+                    <option value="3">3 stars</option>
+                    <option value="2">2 stars</option>
+                    <option value="1">1 star</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="f-from">From date</label>
+                <input id="f-from" type="date">
+            </div>
+            <div class="filter-group search-group">
+                <label for="f-q">Search</label>
+                <input id="f-q" type="search" placeholder="Search review text...">
+            </div>
+            <div class="filter-group">
+                <button type="button" id="f-reset" class="btn small" style="padding: 9px 15px; cursor: pointer;">Clear</button>
+            </div>
+        </form>
+
+        <p id="reviews-count" style="color: #666; font-size: 0.9em; margin-bottom: 10px;" aria-live="polite">0 reviews found</p>
+        
+        <!-- Reviews Container (Your JS will render the review items here) -->
+        <ul id="reviews" class="reviews-list">
+            <!-- Example of what a loaded review will look like -->
+            <li class="review-item">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div>
+                        <strong style="color: #f39c12;">★★★★★</strong>
+                        <span style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-left: 10px;">Google</span>
+                    </div>
+                    <span style="color: #999; font-size: 0.85em;">Oct 18, 2026</span>
+                </div>
+                <p>"Amazing service, highly recommended! Will definitely come back."</p>
+                <button class="btn small" style="margin-top: 10px;">Reply</button>
+            </li>
+        </ul>
+        
+    </main>
+
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api.js"></script>
+    <script src="reviews.js"></script>
+</body>
+</html>

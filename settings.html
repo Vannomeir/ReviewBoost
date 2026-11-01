@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewboost - Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific styles for settings cards - you can move this to style.css later */
+        .settings-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .settings-section h2 { margin-bottom: 5px; color: #1f2937; font-size: 18px; }
+        .settings-section p.desc { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+        .settings-form .input-group { max-width: 500px; margin-bottom: 15px; }
+        .settings-form .input-group label span { 
+            display: block; 
+            font-weight: normal; 
+            color: #9ca3af; 
+            font-size: 12px; 
+            margin-top: 3px;
+        }
+        .toggle-row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            max-width: 500px; 
+            padding: 15px 0; 
+            border-top: 1px solid #f3f4f6;
+        }
+        .actions { 
+            display: flex; 
+            gap: 15px; 
+            max-width: 500px; 
+            justify-content: flex-end; 
+            margin-top: 20px;
+        }
+        .btn-secondary {
+            padding: 10px 15px;
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <h2>Reviewboost</h2>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="reviews.html">All Reviews</a>
+            <a href="analytics.html">Analytics</a>
+            <a href="settings.html" class="active">Settings</a>
+            <a href="login.html">Log out</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <button id="mobileMenuBtn" class="mobile-btn">☰ Menu</button>
+            <h1>General Settings</h1>
+            <div class="user-profile">Admin</div>
+        </header>
+
+        <form id="settings-form" class="settings-form">
+            
+            <!-- Workspace Settings -->
+            <section class="settings-section">
+                <h2>Workspace</h2>
+                <p class="desc">Basic information about your business.</p>
+                
+                <div class="input-group">
+                    <label for="workspace-name">Workspace name <span>Shown to your team in ReviewBoost.</span></label>
+                    <input id="workspace-name" name="workspaceName" type="text" value="My Business Workspace" required>
+                </div>
+                <div class="input-group">
+                    <label for="contact-email">Contact email <span>Used for important workspace updates.</span></label>
+                    <input id="contact-email" name="contactEmail" type="email" placeholder="you@company.com">
+                </div>
+            </section>
+
+            <!-- Preferences Settings -->
+            <section class="settings-section">
+                <h2>Preferences</h2>
+                <p class="desc">Choose how ReviewBoost works for you.</p>
+                
+                <div class="toggle-row">
+                    <div>
+                        <strong>Email notifications</strong>
+                        <span style="display:block; font-size:12px; color:#6b7280; margin-top:3px;">Receive important account and review updates by email.</span>
+                    </div>
+                    <input type="checkbox" name="emailNotifications" checked>
+                </div>
+                <div class="toggle-row">
+                    <div>
+                        <strong>Weekly summary</strong>
+                        <span style="display:block; font-size:12px; color:#6b7280; margin-top:3px;">Get a weekly overview of your review activity.</span>
+                    </div>
+                    <input type="checkbox" name="weeklySummary">
+                </div>
+            </section>
+
+            <div class="actions">
+                <button type="reset" class="btn-secondary">Cancel</button>
+                <!-- Reuse primary-btn class from style.css -->
+                <button type="submit" class="primary-btn" style="width: auto; padding: 10px 20px;">Save changes</button>
+            </div>
+            <p id="status-msg" style="color: #059669; font-weight: bold; margin-top: 15px; display: none;">Settings saved successfully!</p>
+        </form>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="api.js"></script>
+    <script>
+        // Setup Mobile Sidebar Menu
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // Handle settings save simulation
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const status = document.getElementById('status-msg');
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 3000);
+        });
+    </script>
+</body>
+</html>
