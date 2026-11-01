@@ -32,7 +32,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
         if (bizError) throw bizError;
 
         alert("Account created successfully! Please log in.");
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
 
     } catch (error) {
         console.error("Sign up error:", error.message);
