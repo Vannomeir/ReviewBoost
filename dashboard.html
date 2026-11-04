@@ -65,31 +65,21 @@
 
         <section class="recent-reviews">
             <h2>Recent Reviews</h2>
-            <table>
-            <thead>
-            <tr>
-                <th>Date</th>
-                <th>Rating</th>
-                <th>Platform</th>
-                <th>Feedback</th>
-                <th>Customer Email</th> <!-- New Column -->
-            </tr>
-            </thead>
-                <tbody>
-                    <tr>
-                        <td>Jane Doe</td>
-                        <td>⭐⭐⭐⭐⭐</td>
-                        <td>"Amazing service, highly recommended!"</td>
-                        <td>Oct 18, 2026</td>
-                    </tr>
-                    <tr>
-                        <td>John Smith</td>
-                        <td>⭐⭐⭐⭐</td>
-                        <td>"Good experience, but delivery was a day late."</td>
-                        <td>Oct 17, 2026</td>
-                    </tr>
-                </tbody>
-            </table>
+            <table class="dashboard-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Rating</th>
+            <th>Platform</th>
+            <th>Feedback</th>
+            <th>Customer Email</th>
+        </tr>
+    </thead>
+    <!-- The JavaScript targets this exact ID to inject the real reviews -->
+    <tbody id="reviewsTableBody">
+        <!-- Leave this space completely empty! -->
+    </tbody>
+</table>
         </section>
         
     </main>
