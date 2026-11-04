@@ -89,25 +89,16 @@ let currentRequestId = null;
 let currentBusinessId = null;
 
 async function initializeFeedbackPage() {
+
+async function initializeFeedbackPage() {
     const loadingMsg = document.getElementById('loading-msg');
     const feedbackForm = document.getElementById('feedbackForm');
 
-    console.log("Initializing ReviewBoost feedback page...");
+    console.log("ReviewBoost feedback initialization started.");
 
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const businessId = urlParams.get('business_id');
-
-    const client = window.reviewBoostClient;
-
-    console.log("Token:", token);
-    console.log("Business ID:", businessId);
-    console.log("Supabase client:", !!client);
-
-    if (!client) {
-        loadingMsg.textContent = "Unable to connect to the database.";
-        return;
-    }
 
     // PUBLIC QR CODE FEEDBACK
     if (businessId && !token) {
@@ -116,9 +107,69 @@ async function initializeFeedbackPage() {
         loadingMsg.style.display = 'none';
         feedbackForm.style.display = 'block';
 
-        console.log("Public feedback form loaded successfully.");
+        console.log("Public feedback form loaded:", businessId);
         return;
     }
+
+    // CUSTOMER FEEDBACK REQUEST
+    if (token) {
+        const client = window.reviewBoostClient;
+
+        if (!client) {
+            loadingMsg.textContent = "Unable to connect to the database.";
+            return;
+        }
+
+        try {
+            const { data: request, error } = await client
+                .from('feedback_requests')
+                .select('request_id, status, expires_at, customers(business_id)')
+                .eq('token', token)
+                .single();
+
+            if (error || !request) {
+                throw new Error("This feedback link is invalid.");
+            }
+
+            if (request.status === 'Completed' ||
+                request.status === 'Expired') {
+                throw new Error("This feedback link has already been used or expired.");
+            }
+
+            if (new Date() > new Date(request.expires_at)) {
+                throw new Error("This feedback link has expired.");
+            }
+
+            currentRequestId = request.request_id;
+            currentBusinessId = request.customers.business_id;
+
+            const { error: updateError } = await client
+                .from('feedback_requests')
+                .update({ status: 'Opened' })
+                .eq('request_id', currentRequestId);
+
+            if (updateError) throw updateError;
+
+            loadingMsg.style.display = 'none';
+            feedbackForm.style.display = 'block';
+
+            console.log("Customer feedback form loaded successfully.");
+
+        } catch (err) {
+            console.error("Feedback initialization error:", err);
+            loadingMsg.textContent = err.message;
+        }
+
+        return;
+    }
+
+    loadingMsg.textContent = "Invalid link. No business specified.";
+}
+
+window.initializeFeedbackPage = initializeFeedbackPage;
+
+initializeFeedbackPage();
+
 
     // CUSTOMER FEEDBACK REQUEST
     if (token) {
