@@ -98,82 +98,53 @@ async function loadDashboardStats(businessId) {
         console.error("Error loading stats:", err.message);
     }
 }
-// Add this function inside dashboard.js and call it after loading the business
-function setupBusinessQRCode(businessId) {
-    // Construct the public feedback URL for this specific business
-    const publicFeedbackUrl = new URL(`feedback.html?business_id=${businessId}`, window.location.href).href;
-    
-    // Set the input field text
-    const linkInput = document.getElementById('public-link-input');
-    if (linkInput) {
-        linkInput.value = publicFeedbackUrl;
-    }
 
-    // Clear any existing QR code before generating a new one
-    const qrContainer = document.getElementById('qrcode');
-    if (qrContainer) {
-        qrContainer.innerHTML = "";
-        
-        // Generate QR code using the CDN library
-        new QRCode(qrContainer, {
-            text: publicFeedbackUrl,
-            width: 150,
-            height: 150,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    }
 
-    // Copy link button handler
-    const copyBtn = document.getElementById('copy-link-btn');
-    if (copyBtn) {
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(publicFeedbackUrl);
-            alert("Feedback link copied to clipboard!");
-        };
-    }
-}
-
-async function loadRecentReviews(businessId) {
+async function loadRecentReviews() {
     try {
+        // Fetch reviews, now explicitly including customer_email
         const { data: reviews, error } = await window.reviewBoostClient
             .from('reviews')
-            .select('*')
-            .eq('business_id', businessId)
+            .select('created_at, rating, platform, text, customer_email')
+            .eq('business_id', currentBusinessId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        const tbody = document.querySelector('.recent-reviews tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+        const tableBody = document.getElementById('reviewsTableBody');
+        tableBody.innerHTML = ''; // Clear loading message
 
-        if (!reviews || reviews.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #6b7280;">No reviews found yet.</td></tr>`;
+        if (reviews.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No reviews yet.</td></tr>';
             return;
         }
 
-        reviews.slice(0, 5).forEach(r => {
-            const stars = '⭐'.repeat(r.rating);
-            const dateFormatted = new Date(r.created_at).toLocaleDateString('en-US', { 
-                month: 'short', day: 'numeric', year: 'numeric' 
-            });
+        reviews.forEach(review => {
+            const date = new Date(review.created_at).toLocaleDateString();
             
+            // Format the star rating
+            const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+            
+            // Handle optional emails gracefully
+            const emailDisplay = review.customer_email 
+                ? `<a href="mailto:${review.customer_email}" style="color: #2563eb; text-decoration: none;">${review.customer_email}</a>` 
+                : '<span style="color: #9ca3af; font-style: italic;">Anonymous</span>';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>Customer (${r.platform})</td>
-                <td>${stars}</td>
-                <td>"${r.text || 'No comment provided'}"</td>
-                <td>${dateFormatted}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${date}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #f59e0b;">${stars}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${review.platform}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${review.text || '-'}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${emailDisplay}</td>
             `;
-            tbody.appendChild(tr);
+            tableBody.appendChild(tr);
         });
+
     } catch (err) {
-        console.error("Error loading reviews table:", err.message);
+        console.error("Error loading reviews:", err);
     }
 }
-
 async function loadCustomerDropdown(businessId) {
     try {
         const { data: customers, error } = await window.reviewBoostClient
