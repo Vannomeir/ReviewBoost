@@ -100,13 +100,15 @@ async function loadDashboardStats(businessId) {
 }
 
 
-async function loadRecentReviews() {
+// CHANGE THIS: async function loadRecentReviews() {
+// TO THIS:
+async function loadRecentReviews(businessId) {
     try {
-        // Fetch reviews, now explicitly including customer_email
+        // Fetch reviews for this specific business, including customer_email
         const { data: reviews, error } = await window.reviewBoostClient
             .from('reviews')
             .select('created_at, rating, platform, text, customer_email')
-            .eq('business_id', currentBusinessId)
+            .eq('business_id', businessId) // Uses the passed businessId parameter
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -114,7 +116,7 @@ async function loadRecentReviews() {
         const tableBody = document.getElementById('reviewsTableBody');
         tableBody.innerHTML = ''; // Clear loading message
 
-        if (reviews.length === 0) {
+        if (!reviews || reviews.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No reviews yet.</td></tr>';
             return;
         }
