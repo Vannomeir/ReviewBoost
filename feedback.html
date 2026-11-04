@@ -71,9 +71,9 @@
                 <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star">★</label>
             </div>
             <div class="input-group">
-    <label for="customerEmail">Email Address (Optional):</label>
-    <input type="email" id="customerEmail" placeholder="So the business can reply to your feedback">
-    </div>
+                <label for="customerEmail">Email Address (Optional):</label>
+                <input type="email" id="customerEmail" placeholder="So the business can reply to your feedback">
+            </div>
 
             <textarea id="comment" placeholder="Tell us about your experience (optional)..."></textarea>
             <button type="submit" class="primary-btn" id="submit-btn">Submit Feedback</button>
@@ -84,138 +84,118 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="api.js"></script>
     <script>
-        
-let currentRequestId = null;
-let currentBusinessId = null;
+        let currentRequestId = null;
+        let currentBusinessId = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    const businessId = urlParams.get('business_id');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const businessId = urlParams.get('business_id');
 
-    // Use the Supabase client initialized in api.js
-    const client = window.reviewBoostClient;
+            const client = window.reviewBoostClient;
 
-    if (!client) {
-        document.getElementById('loading-msg').textContent =
-            "Unable to connect to the database.";
-        return;
-    }
-
-    if (token) {
-        // CUSTOMER FEEDBACK REQUEST VIA TOKEN
-        try {
-            const { data: request, error } = await client
-                .from('feedback_requests')
-                .select('request_id, status, expires_at, customers(business_id)')
-                .eq('token', token)
-                .single();
-
-            if (error || !request) {
-                throw new Error("This feedback link is invalid.");
+            if (!client) {
+                document.getElementById('loading-msg').textContent = "Unable to connect to the database.";
+                return;
             }
 
-            if (request.status === 'Completed' ||
-                request.status === 'Expired') {
-                throw new Error(
-                    "This feedback link has already been used or has expired."
-                );
+            if (token) {
+                try {
+                    const { data: request, error } = await client
+                        .from('feedback_requests')
+                        .select('request_id, status, expires_at, customers(business_id)')
+                        .eq('token', token)
+                        .single();
+
+                    if (error || !request) {
+                        throw new Error("This feedback link is invalid.");
+                    }
+
+                    if (request.status === 'Completed' || request.status === 'Expired') {
+                        throw new Error("This feedback link has already been used or has expired.");
+                    }
+
+                    if (new Date() > new Date(request.expires_at)) {
+                        throw new Error("This feedback link has expired.");
+                    }
+
+                    currentRequestId = request.request_id;
+                    currentBusinessId = request.customers.business_id;
+
+                    await client
+                        .from('feedback_requests')
+                        .update({ status: 'Opened' })
+                        .eq('request_id', currentRequestId);
+
+                    document.getElementById('loading-msg').style.display = 'none';
+                    document.getElementById('feedbackForm').style.display = 'block';
+
+                } catch (err) {
+                    document.getElementById('loading-msg').textContent = err.message;
+                }
+
+            } else if (businessId) {
+                currentBusinessId = businessId;
+                document.getElementById('loading-msg').style.display = 'none';
+                document.getElementById('feedbackForm').style.display = 'block';
+            } else {
+                document.getElementById('loading-msg').textContent = "Invalid link. No business specified.";
+            }
+        });
+
+        // HANDLE FEEDBACK SUBMISSION
+        document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const rating = document.querySelector('input[name="rating"]:checked');
+            const comment = document.getElementById('comment').value.trim();
+            const emailValue = document.getElementById('customerEmail').value.trim();
+            const submitBtn = document.getElementById('submit-btn');
+            const client = window.reviewBoostClient;
+
+            if (!rating || !currentBusinessId) {
+                alert("Please select a rating or check your feedback link.");
+                return;
             }
 
-            if (new Date() > new Date(request.expires_at)) {
-                throw new Error("This feedback link has expired.");
+            submitBtn.textContent = "Submitting...";
+            submitBtn.disabled = true;
+
+            try {
+                const { error: reviewError } = await client
+                    .from('reviews')
+                    .insert([{
+                        business_id: currentBusinessId,
+                        platform: 'Direct',
+                        rating: parseInt(rating.value),
+                        text: comment,
+                        customer_email: emailValue || null
+                    }]);
+
+                if (reviewError) throw reviewError;
+
+                if (currentRequestId) {
+                    const { error: requestError } = await client
+                        .from('feedback_requests')
+                        .update({ status: 'Completed' })
+                        .eq('request_id', currentRequestId);
+
+                    if (requestError) throw requestError;
+                }
+
+                document.getElementById('card-container').innerHTML = `
+                    <h2 style="color: #059669; margin-bottom: 10px;">Thank You!</h2>
+                    <p style="color: #6b7280;">Your feedback has been received and shared with the business owner.</p>
+                `;
+
+            } catch (err) {
+                console.error("Submission error:", err);
+                alert("Failed to submit feedback. Please try again.");
+
+                submitBtn.textContent = "Submit Feedback";
+                submitBtn.disabled = false;
             }
-
-            currentRequestId = request.request_id;
-            currentBusinessId = request.customers.business_id;
-
-            // Mark request as opened
-            await client
-                .from('feedback_requests')
-                .update({ status: 'Opened' })
-                .eq('request_id', currentRequestId);
-
-            document.getElementById('loading-msg').style.display = 'none';
-            document.getElementById('feedbackForm').style.display = 'block';
-
-        } catch (err) {
-            document.getElementById('loading-msg').textContent = err.message;
-        }
-
-    } else if (businessId) {
-        // GENERAL PUBLIC QR CODE SCAN
-        currentBusinessId = businessId;
-
-        document.getElementById('loading-msg').style.display = 'none';
-        document.getElementById('feedbackForm').style.display = 'block';
-
-    } else {
-        document.getElementById('loading-msg').textContent =
-            "Invalid link. No business specified.";
-    }
-});
-
-
-// HANDLE FEEDBACK SUBMISSION
-document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const rating = document.querySelector('input[name="rating"]:checked');
-    const comment = document.getElementById('comment').value.trim();
-    // 1. Grab the email value here
-    const emailValue = document.getElementById('customerEmail').value.trim(); 
-    
-    const submitBtn = document.getElementById('submit-btn');
-    const client = window.reviewBoostClient;
-
-    if (!rating || !currentBusinessId) {
-        alert("Please select a rating or check your feedback link.");
-        return;
-    }
-
-    submitBtn.textContent = "Submitting...";
-    submitBtn.disabled = true;
-
-    try {
-        // 2. Save feedback as a direct review (Unified into one single insert)
-        const { error: reviewError } = await client
-            .from('reviews')
-            .insert([{
-                business_id: currentBusinessId,
-                platform: 'Direct',
-                rating: parseInt(rating.value),
-                text: comment,
-                customer_email: emailValue || null // Includes the email
-            }]);
-
-        if (reviewError) throw reviewError;
-
-        // Only update feedback requests created through a token
-        if (currentRequestId) {
-            const { error: requestError } = await client
-                .from('feedback_requests')
-                .update({ status: 'Completed' })
-                .eq('request_id', currentRequestId);
-
-            if (requestError) throw requestError;
-        }
-
-        // Display success message
-        document.getElementById('card-container').innerHTML = `
-            <h2 style="color: #059669; margin-bottom: 10px;">
-                Thank You!
-            </h2>
-            <p style="color: #6b7280;">
-                Your feedback has been received and shared with the business owner.
-            </p>
-        `;
-
-    } catch (err) {
-        console.error("Submission error:", err);
-        alert("Failed to submit feedback. Please try again.");
-
-        submitBtn.textContent = "Submit Feedback";
-        submitBtn.disabled = false;
-    }
-});
-
+        });
+    </script>
+</body>
+</html>
