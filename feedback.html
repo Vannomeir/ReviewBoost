@@ -70,6 +70,10 @@
                 <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars">★</label>
                 <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star">★</label>
             </div>
+            <div class="input-group">
+    <label for="customerEmail">Email Address (Optional):</label>
+    <input type="email" id="customerEmail" placeholder="So the business can reply to your feedback">
+    </div>
 
             <textarea id="comment" placeholder="Tell us about your experience (optional)..."></textarea>
             <button type="submit" class="primary-btn" id="submit-btn">Submit Feedback</button>
@@ -158,6 +162,9 @@ document.getElementById('feedbackForm').addEventListener('submit', async (e) => 
 
     const rating = document.querySelector('input[name="rating"]:checked');
     const comment = document.getElementById('comment').value.trim();
+    // 1. Grab the email value here
+    const emailValue = document.getElementById('customerEmail').value.trim(); 
+    
     const submitBtn = document.getElementById('submit-btn');
     const client = window.reviewBoostClient;
 
@@ -170,14 +177,15 @@ document.getElementById('feedbackForm').addEventListener('submit', async (e) => 
     submitBtn.disabled = true;
 
     try {
-        // Save feedback as a direct review
+        // 2. Save feedback as a direct review (Unified into one single insert)
         const { error: reviewError } = await client
             .from('reviews')
             .insert([{
                 business_id: currentBusinessId,
                 platform: 'Direct',
                 rating: parseInt(rating.value),
-                text: comment
+                text: comment,
+                customer_email: emailValue || null // Includes the email
             }]);
 
         if (reviewError) throw reviewError;
@@ -210,7 +218,3 @@ document.getElementById('feedbackForm').addEventListener('submit', async (e) => 
         submitBtn.disabled = false;
     }
 });
-
-    </script>
-</body>
-</html>
