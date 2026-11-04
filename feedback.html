@@ -88,22 +88,40 @@
 let currentRequestId = null;
 let currentBusinessId = null;
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initializeFeedbackPage() {
+    const loadingMsg = document.getElementById('loading-msg');
+    const feedbackForm = document.getElementById('feedbackForm');
+
+    console.log("Initializing ReviewBoost feedback page...");
+
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const businessId = urlParams.get('business_id');
 
-    // Use the Supabase client initialized in api.js
     const client = window.reviewBoostClient;
 
+    console.log("Token:", token);
+    console.log("Business ID:", businessId);
+    console.log("Supabase client:", !!client);
+
     if (!client) {
-        document.getElementById('loading-msg').textContent =
-            "Unable to connect to the database.";
+        loadingMsg.textContent = "Unable to connect to the database.";
         return;
     }
 
+    // PUBLIC QR CODE FEEDBACK
+    if (businessId && !token) {
+        currentBusinessId = businessId;
+
+        loadingMsg.style.display = 'none';
+        feedbackForm.style.display = 'block';
+
+        console.log("Public feedback form loaded successfully.");
+        return;
+    }
+
+    // CUSTOMER FEEDBACK REQUEST
     if (token) {
-        // CUSTOMER FEEDBACK REQUEST VIA TOKEN
         try {
             const { data: request, error } = await client
                 .from('feedback_requests')
@@ -129,31 +147,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentRequestId = request.request_id;
             currentBusinessId = request.customers.business_id;
 
-            // Mark request as opened
             await client
                 .from('feedback_requests')
                 .update({ status: 'Opened' })
                 .eq('request_id', currentRequestId);
 
-            document.getElementById('loading-msg').style.display = 'none';
-            document.getElementById('feedbackForm').style.display = 'block';
+            loadingMsg.style.display = 'none';
+            feedbackForm.style.display = 'block';
+
+            console.log("Customer feedback form loaded successfully.");
 
         } catch (err) {
-            document.getElementById('loading-msg').textContent = err.message;
+            console.error("Feedback initialization error:", err);
+            loadingMsg.textContent = err.message;
         }
 
-    } else if (businessId) {
-        // GENERAL PUBLIC QR CODE SCAN
-        currentBusinessId = businessId;
-
-        document.getElementById('loading-msg').style.display = 'none';
-        document.getElementById('feedbackForm').style.display = 'block';
-
-    } else {
-        document.getElementById('loading-msg').textContent =
-            "Invalid link. No business specified.";
+        return;
     }
-});
+
+    loadingMsg.textContent = "Invalid link. No business specified.";
+}
+
+// Run initialization directly
+initializeFeedbackPage();
+
 
 
 // HANDLE FEEDBACK SUBMISSION
